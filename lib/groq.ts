@@ -1,5 +1,5 @@
 import "server-only";
-import Groq from "groq-sdk";
+import Groq, { RateLimitError } from "groq-sdk";
 import type { z } from "zod";
 
 const apiKey = process.env.GROQ_API_KEY;
@@ -19,6 +19,19 @@ function getClient(): Groq {
 }
 
 export const DEFAULT_MODEL = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
+
+// Tried in order. If a model is rate-limited (or otherwise failing), the
+// next one takes over so a single model's daily cap doesn't stall the app.
+const MODEL_FALLBACK_CHAIN = [
+  DEFAULT_MODEL,
+  "llama-3.3-70b-versatile",
+  "openai/gpt-oss-20b",
+  "llama-3.1-8b-instant",
+].filter((model, i, arr) => arr.indexOf(model) === i);
+
+function isRateLimitError(err: unknown): boolean {
+  return err instanceof RateLimitError;
+}
 
 interface GenerateJSONParams<T> {
   system: string;
@@ -47,42 +60,50 @@ export async function generateJSON<T>({
   system,
   user,
   schema,
-  model = DEFAULT_MODEL,
+  model,
   temperature = 0.4,
   maxRetries = 2,
 }: GenerateJSONParams<T>): Promise<T> {
   const groq = getClient();
+  const modelsToTry = model ? [model] : MODEL_FALLBACK_CHAIN;
   let lastError = "";
 
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    const correction = lastError
-      ? `\n\nYour previous response was invalid: ${lastError}. Return ONLY valid JSON matching the required shape, with no markdown fences or commentary.`
-      : "";
+  for (const currentModel of modelsToTry) {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      const correction = lastError
+        ? `\n\nYour previous response was invalid: ${lastError}. Return ONLY valid JSON matching the required shape, with no markdown fences or commentary.`
+        : "";
 
-    try {
-      const completion = await groq.chat.completions.create({
-        model,
-        temperature,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: system + correction },
-          { role: "user", content: user },
-        ],
-      });
+      try {
+        const completion = await groq.chat.completions.create({
+          model: currentModel,
+          temperature,
+          response_format: { type: "json_object" },
+          messages: [
+            { role: "system", content: system + correction },
+            { role: "user", content: user },
+          ],
+        });
 
-      const content = completion.choices[0]?.message?.content ?? "";
-      const parsed = extractJson(content);
-      const result = schema.safeParse(parsed);
+        const content = completion.choices[0]?.message?.content ?? "";
+        const parsed = extractJson(content);
+        const result = schema.safeParse(parsed);
 
-      if (result.success) {
-        return result.data;
+        if (result.success) {
+          return result.data;
+        }
+        lastError = result.error.issues
+          .slice(0, 5)
+          .map((i) => `${i.path.join(".")}: ${i.message}`)
+          .join("; ");
+      } catch (err) {
+        if (isRateLimitError(err)) {
+          lastError = `${currentModel} is rate-limited`;
+          console.warn(`[groq] ${currentModel} rate-limited, switching model`);
+          break; // stop retrying this model, fall through to the next one
+        }
+        lastError = err instanceof Error ? err.message : "unknown error";
       }
-      lastError = result.error.issues
-        .slice(0, 5)
-        .map((i) => `${i.path.join(".")}: ${i.message}`)
-        .join("; ");
-    } catch (err) {
-      lastError = err instanceof Error ? err.message : "unknown error";
     }
   }
 
