@@ -109,3 +109,57 @@ export async function generateJSON<T>({
 
   throw new Error(`Failed to get valid structured output from model: ${lastError}`);
 }
+
+interface StreamJSONParams<T> {
+  system: string;
+  user: string;
+  schema: z.ZodType<T>;
+  temperature?: number;
+  onChunk?: (delta: string) => void;
+}
+
+/**
+ * Best-effort streamed generation against the primary model only, so the
+ * caller can show live text while waiting. No retry/correction logic here —
+ * on any failure (network, rate limit, invalid JSON, schema mismatch) the
+ * caller is expected to fall back to the robust generateJSON() above, which
+ * has the full multi-model + retry chain.
+ */
+export async function streamJSON<T>({
+  system,
+  user,
+  schema,
+  temperature = 0.6,
+  onChunk,
+}: StreamJSONParams<T>): Promise<T> {
+  const groq = getClient();
+
+  const stream = await groq.chat.completions.create({
+    model: DEFAULT_MODEL,
+    temperature,
+    response_format: { type: "json_object" },
+    stream: true,
+    messages: [
+      { role: "system", content: system },
+      { role: "user", content: user },
+    ],
+  });
+
+  let content = "";
+  for await (const chunk of stream) {
+    const delta = chunk.choices[0]?.delta?.content ?? "";
+    if (delta) {
+      content += delta;
+      onChunk?.(delta);
+    }
+  }
+
+  const parsed = extractJson(content);
+  const result = schema.safeParse(parsed);
+  if (!result.success) {
+    throw new Error(
+      result.error.issues.slice(0, 5).map((i) => `${i.path.join(".")}: ${i.message}`).join("; "),
+    );
+  }
+  return result.data;
+}

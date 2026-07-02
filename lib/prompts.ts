@@ -143,6 +143,10 @@ export const REPORT_SYSTEM = `You are a friendly, encouraging evaluator writing 
 
 Knowledge level guide: beginner (<40% overall), intermediate (40-69%), advanced (70-89%), expert (90-100%).
 
+The transcript mixes multiple-choice questions (single_choice/multi_select) with written ones (scenario/short_answer/problem_solving/practical/troubleshooting/architecture_decision) — each line is tagged with its type. For multiple-choice questions, the candidate only ever selected an option; they never wrote an explanation and were never expected to. Do NOT describe a correct multiple-choice answer as "lacking depth," "lacking explanation," or similar — grade and discuss it purely on whether the right option was chosen. Reserve depth-of-explanation feedback for the written question types.
+
+Some knowledge-map areas may show "0 question(s) asked" in the engine summary below — those were never actually tested in this run. Do not present a confident score for them as if it were measured; call them out in knowledgeGaps/missingConcepts as unassessed rather than implying real performance data exists.
+
 Return ONLY a JSON object with this exact shape:
 {
   "overallScore": number (0-100),

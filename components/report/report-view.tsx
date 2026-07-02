@@ -77,7 +77,10 @@ function ScoreRing({ score }: { score: number }) {
 export function ReportView({ topic, report }: { topic: string; report: FinalReport }) {
   const router = useRouter();
   const rootRef = useRef<HTMLDivElement>(null);
-  const sortedCoverage = [...report.areaCoverage].sort((a, b) => b.score - a.score);
+  const sortedCoverage = [...report.areaCoverage].sort((a, b) => {
+    if (a.assessed !== b.assessed) return a.assessed ? -1 : 1;
+    return b.score - a.score;
+  });
 
   useLayoutEffect(() => {
     const scope = createScope({ root: rootRef }).add(() => {
@@ -134,22 +137,31 @@ export function ReportView({ topic, report }: { topic: string; report: FinalRepo
           What You Covered
         </h3>
         <div className="space-y-4">
-          {sortedCoverage.map((area) => (
-            <div key={area.area}>
-              <div className="mb-1.5 flex items-center justify-between text-sm">
-                <span className="text-foreground/90">{area.area}</span>
-                <span className="tabular-nums text-muted-foreground">{area.score}%</span>
+          {sortedCoverage.map((area) =>
+            area.assessed ? (
+              <div key={area.area}>
+                <div className="mb-1.5 flex items-center justify-between text-sm">
+                  <span className="text-foreground/90">{area.area}</span>
+                  <span className="tabular-nums text-muted-foreground">{area.score}%</span>
+                </div>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+                  <div
+                    data-bar-fill
+                    data-value={area.score}
+                    style={{ width: 0 }}
+                    className={cn("h-full rounded-full", barColor(area.score))}
+                  />
+                </div>
               </div>
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
-                <div
-                  data-bar-fill
-                  data-value={area.score}
-                  style={{ width: 0 }}
-                  className={cn("h-full rounded-full", barColor(area.score))}
-                />
+            ) : (
+              <div key={area.area} className="flex items-center justify-between text-sm opacity-60">
+                <span className="text-foreground/70">{area.area}</span>
+                <span className="rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground">
+                  Not assessed
+                </span>
               </div>
-            </div>
-          ))}
+            ),
+          )}
         </div>
       </section>
 

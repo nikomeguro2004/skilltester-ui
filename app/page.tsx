@@ -1,4 +1,5 @@
 import { AssessmentSetupForm } from "@/components/home/assessment-setup-form";
+import { ResumeBanner } from "@/components/home/resume-banner";
 import { ScrambleHeading } from "@/components/home/scramble-heading";
 
 export default function Home() {
@@ -41,7 +42,8 @@ export default function Home() {
         Relax, learn, and enjoy!
       </p>
 
-      <div className="mt-12 flex w-full justify-center">
+      <div className="mt-12 flex w-full flex-col items-center">
+        <ResumeBanner />
         <AssessmentSetupForm />
       </div>
     </div>

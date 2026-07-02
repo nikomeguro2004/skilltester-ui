@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { generateJSON } from "@/lib/groq";
 import { buildEvaluatePrompt, EVALUATE_SYSTEM } from "@/lib/prompts";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { answerSubmissionSchema, evaluationSchema, questionSchema } from "@/lib/schemas";
 
 export const dynamic = "force-dynamic";
@@ -12,6 +13,14 @@ const requestSchema = z.object({
 });
 
 export async function POST(req: Request) {
+  const { allowed, retryAfterSeconds } = checkRateLimit(getClientIp(req), "evaluate");
+  if (!allowed) {
+    return NextResponse.json(
+      { error: `Too many requests. Try again in ${retryAfterSeconds}s.` },
+      { status: 429 },
+    );
+  }
+
   let body: unknown;
   try {
     body = await req.json();

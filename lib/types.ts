@@ -78,6 +78,7 @@ export interface AnsweredQuestion {
 export interface AreaCoverage {
   area: string;
   score: number; // 0-100
+  assessed: boolean; // false if the area was never actually probed with a question
 }
 
 export interface FinalReport {
