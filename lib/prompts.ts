@@ -56,6 +56,31 @@ Return ONLY a JSON object with this exact shape:
   "correctOptionIds": string[] (only for single_choice/multi_select)
 }`;
 
+/**
+ * Turns the adaptive engine's continuous position/score signal into a plain-
+ * language nudge so the model can shade a question slightly easier or harder
+ * within the target difficulty tier, not just hit the tier label blindly.
+ */
+function describeDifficultyTrend(areaState?: AreaState): string {
+  if (!areaState || areaState.attempts === 0) {
+    return "This is the first question in this area — no trend yet, write a solid, representative question right at the target difficulty.";
+  }
+  if (areaState.ceilingPending) {
+    return `The candidate's last answer in this area (${areaState.lastScore}%) just missed at this same difficulty — this question re-checks that exact edge, so keep it at essentially the same difficulty, not easier or harder.`;
+  }
+  const score = areaState.lastScore ?? 0;
+  if (score >= 90) {
+    return `The candidate aced the last question in this area (${score}%) — push meaningfully harder within the target difficulty, don't hold back.`;
+  }
+  if (score >= 70) {
+    return `The candidate passed the last question in this area narrowly (${score}%) — nudge only slightly harder within the target difficulty, not a big jump.`;
+  }
+  if (score >= 50) {
+    return `The candidate fell just short on the last question in this area (${score}%) — ease off slightly within the target difficulty, don't make it drastically easier.`;
+  }
+  return `The candidate struggled significantly on the last question in this area (${score}%) — this one should feel noticeably more approachable within the target difficulty.`;
+}
+
 export function buildQuestionPrompt(
   map: KnowledgeMap,
   targetArea: string,
@@ -63,6 +88,7 @@ export function buildQuestionPrompt(
   length: AssessmentLength,
   history: AnsweredQuestion[],
   questionNumber: number,
+  areaState?: AreaState,
 ): string {
   const priorInArea = history.filter((h) => h.question.area === targetArea);
   const priorInAreaSummary = priorInArea.length
@@ -87,6 +113,7 @@ Assessment length: ${length} questions total. This is question ${questionNumber}
 --- ADAPTIVE ENGINE DIRECTIVE (authoritative — do not override) ---
 Target area: "${targetArea}"
 Target difficulty: ${targetDifficulty}
+Difficulty trend: ${describeDifficultyTrend(areaState)}
 Prior attempts in this specific area:
 ${priorInAreaSummary}
 ---

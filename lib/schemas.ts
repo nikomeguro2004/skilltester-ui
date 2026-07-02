@@ -7,6 +7,18 @@ export const difficultySchema = z.enum([
   "expert",
 ]);
 
+export const areaStateSchema = z.object({
+  area: z.string(),
+  weight: z.number(),
+  attempts: z.number(),
+  position: z.number(),
+  nextLevelIndex: z.number(),
+  lastScore: z.number().nullable(),
+  confirmedLevelIndex: z.number(),
+  ceilingLevelIndex: z.number().nullable(),
+  ceilingPending: z.boolean(),
+});
+
 export const knowledgeMapSchema = z.object({
   topic: z.string().min(1),
   summary: z.string().min(1),

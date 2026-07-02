@@ -5,6 +5,7 @@ import { buildQuestionPrompt, QUESTION_SYSTEM } from "@/lib/prompts";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import {
   answeredQuestionSchema,
+  areaStateSchema,
   assessmentLengthSchema,
   difficultySchema,
   knowledgeMapSchema,
@@ -17,6 +18,7 @@ const requestSchema = z.object({
   knowledgeMap: knowledgeMapSchema,
   targetArea: z.string().min(1),
   targetDifficulty: difficultySchema,
+  areaState: areaStateSchema.optional(),
   length: assessmentLengthSchema,
   history: z.array(answeredQuestionSchema),
   questionNumber: z.number().min(1),
@@ -52,7 +54,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const { knowledgeMap, targetArea, targetDifficulty, length, history, questionNumber } =
+  const { knowledgeMap, targetArea, targetDifficulty, areaState, length, history, questionNumber } =
     parsed.data;
 
   const system = QUESTION_SYSTEM;
@@ -63,6 +65,7 @@ export async function POST(req: Request) {
     length,
     history,
     questionNumber,
+    areaState,
   );
 
   // Streams the primary model's raw output as it arrives (so the client can

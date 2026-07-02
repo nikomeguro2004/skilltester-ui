@@ -100,11 +100,12 @@ export function AssessmentFlow() {
       streamBufferRef.current = "";
       setStreamingPreview("");
       try {
-        const probe = computeNextProbe(map, difficulty, hist);
+        const probe = computeNextProbe(map, difficulty, hist, length);
         const question = await fetchNextQuestionStream(
           map,
           probe.area,
           probe.difficulty,
+          probe.areaState,
           length,
           hist,
           qNum,

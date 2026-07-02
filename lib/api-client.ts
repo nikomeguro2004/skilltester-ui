@@ -1,3 +1,4 @@
+import type { AreaState } from "./adaptive-engine";
 import type {
   AnsweredQuestion,
   AnswerSubmission,
@@ -45,6 +46,7 @@ export async function fetchNextQuestionStream(
   knowledgeMap: KnowledgeMap,
   targetArea: string,
   targetDifficulty: Difficulty,
+  areaState: AreaState,
   length: AssessmentLength,
   history: AnsweredQuestion[],
   questionNumber: number,
@@ -57,6 +59,7 @@ export async function fetchNextQuestionStream(
       knowledgeMap,
       targetArea,
       targetDifficulty,
+      areaState,
       length,
       history,
       questionNumber,
