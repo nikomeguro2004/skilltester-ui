@@ -114,7 +114,7 @@ export function QuestionCard({
       </div>
 
       {question.context && (
-        <div className="mb-5 rounded-2xl border border-border bg-secondary/40 p-4 text-sm leading-relaxed text-muted-foreground">
+        <div className="mb-5 rounded-2xl border border-border bg-secondary/40 p-4 text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">
           {question.context}
         </div>
       )}
