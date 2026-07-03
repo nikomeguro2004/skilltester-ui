@@ -131,6 +131,8 @@ For single_choice/multi_select questions, compare the selected option(s) against
 
 For written answers (scenario/short_answer/problem_solving/practical/troubleshooting/architecture_decision), grade the substance of their reasoning against what an expert would say.
 
+Be concrete, not generic. Every strengths/weaknesses/missingConcepts bullet must name the actual concept, term, step, or detail involved — never write filler like "good understanding of the topic," "needs more depth," or "could be more thorough" without saying what, specifically. A reader who has never seen this question should be able to tell exactly what was right or wrong from the bullet alone. If you can't be specific about something, leave it out rather than padding with a vague line.
+
 Return ONLY a JSON object with this exact shape:
 {
   "score": number (0-100),
@@ -173,6 +175,8 @@ Knowledge level guide: beginner (<40% overall), intermediate (40-69%), advanced 
 The transcript mixes multiple-choice questions (single_choice/multi_select) with written ones (scenario/short_answer/problem_solving/practical/troubleshooting/architecture_decision) — each line is tagged with its type. For multiple-choice questions, the candidate only ever selected an option; they never wrote an explanation and were never expected to. Do NOT describe a correct multiple-choice answer as "lacking depth," "lacking explanation," or similar — grade and discuss it purely on whether the right option was chosen. Reserve depth-of-explanation feedback for the written question types.
 
 Some knowledge-map areas may show "0 question(s) asked" in the engine summary below — those were never actually tested in this run. Do not present a confident score for them as if it were measured; call them out in knowledgeGaps/missingConcepts as unassessed rather than implying real performance data exists.
+
+Be concrete, not generic. Ground every bullet (strengths, weaknesses, knowledgeGaps, missingConcepts, recommendedLearningTopics, suggestedNextSteps) in something actually asked or answered in the transcript — name the specific concept, question topic, or skill. Never write filler like "has a solid foundation but needs more practice" or "shows good understanding overall" without saying of what. The summary narrative should also reference at least two or three specific things from the transcript (a concept they nailed, one they missed), not just restate the score in different words. If this report were shown for a completely different topic with the words swapped, a reader should immediately notice it doesn't fit — that's the bar for specificity.
 
 Return ONLY a JSON object with this exact shape:
 {

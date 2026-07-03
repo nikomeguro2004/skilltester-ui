@@ -1,21 +1,25 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { animate, createScope, stagger } from "animejs";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   BookOpen,
+  Check,
+  ChevronDown,
   Compass,
+  ListChecks,
   RotateCcw,
   Target,
   TrendingDown,
   TrendingUp,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useCountUp } from "@/lib/use-count-up";
-import type { FinalReport } from "@/lib/types";
+import type { AnsweredQuestion, FinalReport } from "@/lib/types";
 
 function levelColor(score: number) {
   if (score >= 85) return "text-chart-2";
@@ -74,13 +78,173 @@ function ScoreRing({ score }: { score: number }) {
   );
 }
 
-export function ReportView({ topic, report }: { topic: string; report: FinalReport }) {
+const PASS_THRESHOLD = 70;
+
+function QuestionReviewRow({ index, item }: { index: number; item: AnsweredQuestion }) {
+  const [open, setOpen] = useState(false);
+  const { question, answer, evaluation } = item;
+  const passed = evaluation.score >= PASS_THRESHOLD;
+  const isChoice = question.type === "single_choice" || question.type === "multi_select";
+  const correctIds = new Set(question.correctOptionIds ?? []);
+  const selectedIds = new Set(answer.selectedOptionIds ?? []);
+
+  return (
+    <div className="overflow-hidden rounded-2xl border-2 border-border bg-card">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center gap-3 p-4 text-left outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+      >
+        <span
+          className={cn(
+            "flex size-7 shrink-0 items-center justify-center rounded-full",
+            passed ? "bg-chart-2/15 text-chart-2" : "bg-destructive/15 text-destructive",
+          )}
+        >
+          {passed ? <Check className="size-4" /> : <X className="size-4" />}
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs text-muted-foreground">
+            Question {index + 1} · {question.area}
+          </p>
+          <p className="truncate text-sm font-medium text-foreground">{question.prompt}</p>
+        </div>
+        <span className="shrink-0 text-sm tabular-nums text-muted-foreground">
+          {evaluation.score}%
+        </span>
+        <ChevronDown
+          className={cn("size-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")}
+        />
+      </button>
+
+      {open && (
+        <div className="space-y-4 border-t border-border px-4 pt-4 pb-5 text-sm">
+          {question.context && (
+            <p className="rounded-xl bg-secondary/40 p-3 whitespace-pre-wrap text-muted-foreground">
+              {question.context}
+            </p>
+          )}
+          <p className="font-medium text-foreground/90">{question.prompt}</p>
+
+          {isChoice && question.options ? (
+            <div className="space-y-1.5">
+              {question.options.map((opt) => {
+                const isCorrect = correctIds.has(opt.id);
+                const isSelected = selectedIds.has(opt.id);
+                return (
+                  <div
+                    key={opt.id}
+                    className={cn(
+                      "flex items-center gap-2 rounded-lg px-3 py-2 whitespace-pre-wrap",
+                      isCorrect && "bg-chart-2/10 text-chart-2",
+                      isSelected && !isCorrect && "bg-destructive/10 text-destructive",
+                      !isCorrect && !isSelected && "text-muted-foreground",
+                    )}
+                  >
+                    {isCorrect && <Check className="size-3.5 shrink-0" />}
+                    {isSelected && !isCorrect && <X className="size-3.5 shrink-0" />}
+                    <span className="flex-1">{opt.label}</span>
+                    {isSelected && <span className="shrink-0 text-xs opacity-70">your pick</span>}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div>
+              <p className="mb-1 text-xs font-medium text-muted-foreground">Your answer</p>
+              <p className="rounded-xl bg-secondary/30 p-3 whitespace-pre-wrap text-foreground/85">
+                {answer.text || "(no answer provided)"}
+              </p>
+            </div>
+          )}
+
+          <div>
+            <p className="mb-1 text-xs font-medium text-muted-foreground">Ideal answer</p>
+            <p className="whitespace-pre-wrap text-foreground/80">{evaluation.idealAnswer}</p>
+          </div>
+
+          {evaluation.explanation && (
+            <p className="text-foreground/70">{evaluation.explanation}</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function InsightCard({
+  icon,
+  title,
+  chips,
+  items,
+  tone = "default",
+}: {
+  icon: ReactNode;
+  title: string;
+  chips?: string[];
+  items?: string[];
+  tone?: "default" | "primary";
+}) {
+  const empty = (chips && chips.length === 0) || (items && items.length === 0);
+  if (empty) return null;
+
+  return (
+    <section
+      className={cn(
+        "mb-5 break-inside-avoid rounded-3xl border-2 p-6",
+        tone === "primary" ? "border-primary/20 bg-primary/5" : "border-border bg-card",
+      )}
+    >
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+        {icon}
+        {title}
+      </h3>
+      {chips && (
+        <div className="flex flex-wrap gap-1.5">
+          {chips.map((c) => (
+            <span
+              key={c}
+              className={cn(
+                "rounded-full border px-3 py-1 text-xs",
+                tone === "primary"
+                  ? "border-primary/30 bg-primary/10 text-primary"
+                  : "border-border bg-secondary/50 text-foreground/85",
+              )}
+            >
+              {c}
+            </span>
+          ))}
+        </div>
+      )}
+      {items && (
+        <ul className="space-y-1.5">
+          {items.map((item, i) => (
+            <li key={i} className="text-sm leading-relaxed text-foreground/85">
+              {item}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+export function ReportView({
+  topic,
+  report,
+  history,
+}: {
+  topic: string;
+  report: FinalReport;
+  history: AnsweredQuestion[];
+}) {
   const router = useRouter();
   const rootRef = useRef<HTMLDivElement>(null);
   const sortedCoverage = [...report.areaCoverage].sort((a, b) => {
     if (a.assessed !== b.assessed) return a.assessed ? -1 : 1;
     return b.score - a.score;
   });
+  const correctCount = history.filter((h) => h.evaluation.score >= PASS_THRESHOLD).length;
 
   useLayoutEffect(() => {
     const scope = createScope({ root: rootRef }).add(() => {
@@ -176,88 +340,53 @@ export function ReportView({ topic, report }: { topic: string; report: FinalRepo
         <p className="text-sm leading-relaxed text-foreground/90">{report.summary}</p>
       </section>
 
-      <div data-report-section style={{ opacity: 0 }} className="mt-6 grid gap-6 sm:grid-cols-2">
-        <section className="rounded-3xl border-2 border-border bg-card p-6">
-          <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-            <TrendingUp className="size-4 text-chart-2" />
-            You Know This Well
-          </h3>
-          <div className="flex flex-wrap gap-1.5">
-            {report.strongestAreas.map((a) => (
-              <span
-                key={a}
-                className="rounded-full border border-border bg-secondary/50 px-3 py-1 text-xs text-foreground/85"
-              >
-                {a}
-              </span>
-            ))}
-          </div>
-        </section>
-
-        <section className="rounded-3xl border-2 border-border bg-card p-6">
-          <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-            <TrendingDown className="size-4 text-destructive" />
-            Room to Grow
-          </h3>
-          <div className="flex flex-wrap gap-1.5">
-            {report.weakestAreas.map((a) => (
-              <span
-                key={a}
-                className="rounded-full border border-border bg-secondary/50 px-3 py-1 text-xs text-foreground/85"
-              >
-                {a}
-              </span>
-            ))}
-          </div>
-        </section>
-      </div>
-
-      <div data-report-section style={{ opacity: 0 }} className="mt-6 grid gap-6 sm:grid-cols-2">
-        <ListSection title="Strengths" items={report.strengths} />
-        <ListSection title="Weaknesses" items={report.weaknesses} />
-        <ListSection title="Knowledge Gaps" items={report.knowledgeGaps} />
-        <ListSection title="Things You Missed" items={report.missingConcepts} />
-      </div>
-
-      <section
-        data-report-section
-        style={{ opacity: 0 }}
-        className="mt-6 rounded-3xl border-2 border-border bg-card p-6 sm:p-8"
-      >
+      <section data-report-section style={{ opacity: 0 }} className="mt-6">
         <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-          <BookOpen className="size-4 text-primary" />
-          Worth Learning More About
+          <ListChecks className="size-4 text-primary" />
+          Question by Question
+          <span className="ml-auto text-xs font-normal text-muted-foreground">
+            {correctCount} of {history.length} correct
+          </span>
         </h3>
-        <div className="flex flex-wrap gap-1.5">
-          {report.recommendedLearningTopics.map((t) => (
-            <span
-              key={t}
-              className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary"
-            >
-              {t}
-            </span>
+        <div className="space-y-2.5">
+          {history.map((item, i) => (
+            <QuestionReviewRow key={item.question.id} index={i} item={item} />
           ))}
         </div>
       </section>
 
-      <section
-        data-report-section
-        style={{ opacity: 0 }}
-        className="mt-6 rounded-3xl border-2 border-border bg-card p-6 sm:p-8"
-      >
-        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-          <Compass className="size-4 text-primary" />
-          What&apos;s Next
-        </h3>
-        <ul className="space-y-2">
-          {report.suggestedNextSteps.map((s, i) => (
-            <li key={i} className="flex items-start gap-2 text-sm leading-relaxed text-foreground/85">
-              <ArrowRight className="mt-0.5 size-3.5 shrink-0 text-primary/70" />
-              {s}
-            </li>
-          ))}
-        </ul>
-      </section>
+      <div data-report-section style={{ opacity: 0 }} className="mt-6 columns-1 gap-5 sm:columns-2">
+        <InsightCard
+          icon={<TrendingUp className="size-4 text-chart-2" />}
+          title="You Know This Well"
+          chips={report.strongestAreas}
+        />
+        <InsightCard
+          icon={<TrendingDown className="size-4 text-destructive" />}
+          title="Room to Grow"
+          chips={report.weakestAreas}
+        />
+        <InsightCard icon={<Target className="size-4 text-chart-2" />} title="Strengths" items={report.strengths} />
+        <InsightCard
+          icon={<Target className="size-4 text-destructive" />}
+          title="Weaknesses"
+          items={report.weaknesses}
+        />
+        <InsightCard title="Knowledge Gaps" icon={<Compass className="size-4 text-foreground/60" />} items={report.knowledgeGaps} />
+        <InsightCard title="Things You Missed" icon={<Compass className="size-4 text-foreground/60" />} items={report.missingConcepts} />
+        <InsightCard
+          icon={<BookOpen className="size-4 text-primary" />}
+          title="Worth Learning More About"
+          chips={report.recommendedLearningTopics}
+          tone="primary"
+        />
+        <InsightCard
+          icon={<ArrowRight className="size-4 text-primary" />}
+          title="What's Next"
+          items={report.suggestedNextSteps}
+          tone="primary"
+        />
+      </div>
 
       <div data-report-section style={{ opacity: 0 }} className="mt-10 flex justify-center">
         <Button
@@ -271,23 +400,5 @@ export function ReportView({ topic, report }: { topic: string; report: FinalRepo
         </Button>
       </div>
     </div>
-  );
-}
-
-function ListSection({ title, items }: { title: string; items: string[] }) {
-  if (items.length === 0) return null;
-  return (
-    <section className="rounded-3xl border-2 border-border bg-card p-6">
-      <h3 className="mb-3 text-sm font-semibold text-foreground">
-        {title}
-      </h3>
-      <ul className="space-y-1.5">
-        {items.map((item, i) => (
-          <li key={i} className="text-sm leading-relaxed text-foreground/85">
-            {item}
-          </li>
-        ))}
-      </ul>
-    </section>
   );
 }

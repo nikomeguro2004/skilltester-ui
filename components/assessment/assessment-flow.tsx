@@ -313,7 +313,7 @@ export function AssessmentFlow() {
   if (stage === "report" && report) {
     return (
       <div className="flex-1 px-6 py-16">
-        <ReportView topic={topic} report={report} />
+        <ReportView topic={topic} report={report} history={history} />
       </div>
     );
   }
