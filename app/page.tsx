@@ -37,7 +37,7 @@ export default function Home() {
       <ScrambleHeading lines={["What would you like", "to explore today?"]} />
 
       <p className="mt-6 max-w-lg text-center font-sans text-[15px] leading-relaxed text-muted-foreground sm:text-base">
-        Have a fun, interactive conversation about any topic you choose.{" "}
+        Pick any topic and get a friendly quiz that adapts to how you answer.{" "}
         <br className="hidden sm:block" />
         Relax, learn, and enjoy!
       </p>

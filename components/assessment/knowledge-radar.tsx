@@ -79,7 +79,7 @@ function RadarPill({ state }: { state: AreaState }) {
         <div
           ref={rowRef}
           className={cn(
-            "flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1.5 ring-2 transition-colors",
+            "flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1.5 ring-2 transition-colors",
             statusRing(state),
           )}
         >
@@ -127,7 +127,7 @@ export function KnowledgeRadar({ areaStates }: { areaStates: AreaState[] }) {
           )}
         </p>
       </div>
-      <div className="flex flex-wrap gap-1.5">
+      <div className="scrollbar-none -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
         {areaStates.map((state) => (
           <RadarPill key={state.area} state={state} />
         ))}

@@ -127,6 +127,10 @@ export const EVALUATE_SYSTEM = `You are a warm, supportive evaluator grading the
 
 Evaluate across five dimensions (0-100 each): accuracy, understanding, practicalThinking, technicalDepth (or depth of knowledge), communication. The overall "score" should be a holistic, friendly judgment.
 
+Calibrate your expectations to the question's difficulty tier. A beginner question deserves full marks for a correct core idea plainly stated — do not dock points for missing nuances a beginner wouldn't know. An expert question demands precision, edge cases, and tradeoffs — a merely-correct-but-shallow answer there should land in the partial range. The same answer can be an 90 at beginner and a 55 at expert.
+
+When topic research notes (area description, common mistakes, best practices) are provided, use them: check whether the answer falls into one of the known common mistakes (name it if so), and credit the answer when it reflects a listed best practice. Ground idealAnswer in that research rather than generic knowledge.
+
 For single_choice/multi_select questions, compare the selected option(s) against the correct option(s) exactly. These types only require a selection, so never list "no explanation given" as a weakness.
 
 For written answers (scenario/short_answer/problem_solving/practical/troubleshooting/architecture_decision), grade the substance of their reasoning against what an expert would say.
@@ -153,8 +157,20 @@ export function buildEvaluatePrompt(
   question: Question,
   answerText: string,
   selectedLabels: string[] | null,
+  map?: KnowledgeMap,
 ): string {
-  const questionBlock = `Question (${question.type}, area: ${question.area}, difficulty: ${question.difficulty}):
+  const area = map?.areas.find((a) => a.name === question.area);
+  const researchBlock = map
+    ? `Topic: "${map.topic}"
+${area ? `Area under test: ${area.name} — ${area.description}\n` : ""}Common mistakes people make in this topic:
+${map.commonMistakes.map((m) => `- ${m}`).join("\n")}
+Best practices in this topic:
+${map.bestPractices.map((b) => `- ${b}`).join("\n")}
+
+`
+    : "";
+
+  const questionBlock = `${researchBlock}Question (${question.type}, area: ${question.area}, difficulty: ${question.difficulty}):
 ${question.context ? `Context: ${question.context}\n` : ""}${question.prompt}`;
 
   const optionsBlock = question.options

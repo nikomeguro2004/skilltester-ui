@@ -160,7 +160,7 @@ export function AssessmentFlow() {
       requestId: number,
     ) => {
       try {
-        const evaluation = await submitAnswerForEvaluation(question, answer);
+        const evaluation = await submitAnswerForEvaluation(question, answer, map);
         if (requestIdRef.current !== requestId) return;
         pendingAnswerRef.current = null;
         const newHistory = [...hist, { question, answer, evaluation }];
@@ -341,15 +341,14 @@ export function AssessmentFlow() {
           ) : (
             <InlineSpinner label="preparing next question…" />
           ))}
-        {stage === "question" && currentQuestion && (
+        {(stage === "question" || stage === "loading-evaluation") && currentQuestion && (
           <QuestionCard
             key={currentQuestion.id}
             question={currentQuestion}
             onSubmit={handleSubmitAnswer}
-            submitting={stage !== "question"}
+            submitting={stage === "loading-evaluation"}
           />
         )}
-        {stage === "loading-evaluation" && <InlineSpinner label="submitting your answer…" />}
       </div>
     </div>
   );

@@ -67,6 +67,7 @@ export async function generateJSON<T>({
   const groq = getClient();
   const modelsToTry = model ? [model] : MODEL_FALLBACK_CHAIN;
   let lastError = "";
+  let sawRateLimit = false;
 
   for (const currentModel of modelsToTry) {
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -99,6 +100,7 @@ export async function generateJSON<T>({
       } catch (err) {
         if (isRateLimitError(err)) {
           lastError = `${currentModel} is rate-limited`;
+          sawRateLimit = true;
           console.warn(`[groq] ${currentModel} rate-limited, switching model`);
           break; // stop retrying this model, fall through to the next one
         }
@@ -107,7 +109,14 @@ export async function generateJSON<T>({
     }
   }
 
-  throw new Error(`Failed to get valid structured output from model: ${lastError}`);
+  // The raw failure (often a full JSON error body from the API) is for the
+  // server log — the user gets a short, human sentence instead.
+  console.error(`[groq] all attempts failed: ${lastError}`);
+  throw new Error(
+    sawRateLimit
+      ? "Things are a little busy right now — please wait a minute and try again."
+      : "We couldn't generate a response just now. Please try again in a moment.",
+  );
 }
 
 interface StreamJSONParams<T> {

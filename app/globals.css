@@ -122,4 +122,11 @@
   .text-glow {
     text-shadow: 0 0 40px color-mix(in oklch, var(--primary) 45%, transparent);
   }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
 }

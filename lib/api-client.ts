@@ -102,8 +102,12 @@ export async function fetchNextQuestionStream(
   throw new Error("Question stream ended unexpectedly.");
 }
 
-export function submitAnswerForEvaluation(question: Question, answer: AnswerSubmission) {
-  return postJSON<Evaluation>("/api/evaluate", { question, answer });
+export function submitAnswerForEvaluation(
+  question: Question,
+  answer: AnswerSubmission,
+  knowledgeMap?: KnowledgeMap,
+) {
+  return postJSON<Evaluation>("/api/evaluate", { question, answer, knowledgeMap });
 }
 
 export function fetchFinalReport(
