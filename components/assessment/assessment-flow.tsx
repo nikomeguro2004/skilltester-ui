@@ -26,6 +26,7 @@ import { QuestionCard } from "./question-card";
 import { ResearchLoading, ReportLoading } from "./research-loading";
 import { InlineSpinner } from "./inline-spinner";
 import { ErrorState } from "./error-state";
+import { ExitButton } from "./exit-button";
 import { ReportView } from "@/components/report/report-view";
 
 type Stage =
@@ -313,11 +314,21 @@ export function AssessmentFlow() {
   }
 
   if (stage === "loading-research") {
-    return <ResearchLoading topic={topic} />;
+    return (
+      <>
+        <ExitButton />
+        <ResearchLoading topic={topic} />
+      </>
+    );
   }
 
   if (stage === "loading-report") {
-    return <ReportLoading topic={topic} />;
+    return (
+      <>
+        <ExitButton />
+        <ReportLoading topic={topic} />
+      </>
+    );
   }
 
   if (stage === "report" && report) {
@@ -336,6 +347,7 @@ export function AssessmentFlow() {
 
   return (
     <div className="relative flex flex-1 flex-col">
+      <ExitButton />
       <div
         aria-hidden
         className="bg-dot-grid pointer-events-none absolute inset-0 -z-10 opacity-[0.25] [mask-image:radial-gradient(ellipse_70%_50%_at_50%_0%,black,transparent)]"
