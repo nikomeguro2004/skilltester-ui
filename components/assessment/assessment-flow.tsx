@@ -10,6 +10,7 @@ import {
   submitAnswerForEvaluation,
 } from "@/lib/api-client";
 import { clearSession, loadSession, saveSession } from "@/lib/session-storage";
+import { saveQuizRecord } from "@/lib/quiz-history";
 import type {
   AnsweredQuestion,
   AnswerSubmission,
@@ -139,6 +140,15 @@ export function AssessmentFlow() {
         if (requestIdRef.current !== requestId) return;
         failedStepRef.current = null;
         clearSession();
+        saveQuizRecord({
+          id: crypto.randomUUID(),
+          topic,
+          difficulty,
+          length,
+          completedAt: Date.now(),
+          report: finalReport,
+          history: hist,
+        });
         setReport(finalReport);
         setStage("report");
       } catch (err) {
@@ -148,7 +158,7 @@ export function AssessmentFlow() {
         setStage("error");
       }
     },
-    [difficulty],
+    [difficulty, topic, length],
   );
 
   const runEvaluate = useCallback(
@@ -313,7 +323,13 @@ export function AssessmentFlow() {
   if (stage === "report" && report) {
     return (
       <div className="flex-1 px-6 py-16">
-        <ReportView topic={topic} report={report} history={history} />
+        <ReportView
+          topic={topic}
+          report={report}
+          history={history}
+          difficulty={difficulty}
+          length={length}
+        />
       </div>
     );
   }

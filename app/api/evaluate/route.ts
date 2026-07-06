@@ -44,6 +44,23 @@ export async function POST(req: Request) {
 
   const { question, answer, knowledgeMap } = parsed.data;
 
+  if (answer.skipped) {
+    return NextResponse.json({
+      score: 0,
+      accuracy: 0,
+      understanding: 0,
+      practicalThinking: 0,
+      technicalDepth: 0,
+      communication: 0,
+      strengths: [],
+      weaknesses: [],
+      missingConcepts: [],
+      idealAnswer: "(You skipped this question.)",
+      improvementSuggestions: [],
+      explanation: "Skipped — no answer was submitted for this question.",
+    });
+  }
+
   const isChoice = question.type === "single_choice" || question.type === "multi_select";
   const selectedLabels = isChoice
     ? (answer.selectedOptionIds ?? [])

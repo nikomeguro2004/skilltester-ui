@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { Clock } from "lucide-react";
 import { AssessmentSetupForm } from "@/components/home/assessment-setup-form";
 import { ResumeBanner } from "@/components/home/resume-banner";
 import { ScrambleHeading } from "@/components/home/scramble-heading";
@@ -17,6 +19,14 @@ export default function Home() {
       />
       {/* film grain */}
       <div aria-hidden className="bg-noise pointer-events-none absolute inset-0 -z-20 opacity-[0.03] mix-blend-overlay" />
+
+      <Link
+        href="/history"
+        className="absolute top-5 right-5 inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card/50 px-3.5 py-1.5 text-[13px] font-medium text-muted-foreground backdrop-blur transition-colors hover:text-foreground sm:top-7 sm:right-7"
+      >
+        <Clock className="size-3.5" />
+        History
+      </Link>
 
       {/* oversized ghost type */}
       <span

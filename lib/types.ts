@@ -52,6 +52,7 @@ export interface AnswerSubmission {
   questionId: string;
   selectedOptionIds?: string[];
   text?: string;
+  skipped?: boolean;
 }
 
 export interface Evaluation {

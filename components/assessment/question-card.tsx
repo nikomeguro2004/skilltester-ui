@@ -101,6 +101,11 @@ export function QuestionCard({
     );
   }
 
+  function handleSkip() {
+    if (submitting) return;
+    onSubmit({ questionId: question.id, skipped: true });
+  }
+
   return (
     <div
       ref={cardRef}
@@ -186,7 +191,7 @@ export function QuestionCard({
         )}
       </div>
 
-      <div className="mt-6 flex items-center justify-between">
+      <div className="mt-6 flex items-center justify-between gap-3">
         <p className="text-xs text-muted-foreground">
           {isChoice
             ? `${selected.length} selected`
@@ -202,6 +207,16 @@ export function QuestionCard({
           {submitting ? "Checking…" : "Submit Answer"}
           {!submitting && <ArrowRight className="ml-1 size-4" />}
         </Button>
+      </div>
+      <div className="mt-3 flex justify-center">
+        <button
+          type="button"
+          onClick={handleSkip}
+          disabled={submitting}
+          className="text-xs font-medium text-muted-foreground underline decoration-muted-foreground/40 underline-offset-4 outline-none transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+        >
+          I don&apos;t know, skip this one
+        </button>
       </div>
     </div>
   );

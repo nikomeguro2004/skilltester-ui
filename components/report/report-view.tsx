@@ -19,7 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useCountUp } from "@/lib/use-count-up";
-import type { AnsweredQuestion, FinalReport } from "@/lib/types";
+import type { AnsweredQuestion, AssessmentLength, Difficulty, FinalReport } from "@/lib/types";
 
 function levelColor(score: number) {
   if (score >= 85) return "text-chart-2";
@@ -110,7 +110,7 @@ function QuestionReviewRow({ index, item }: { index: number; item: AnsweredQuest
           <p className="truncate text-sm font-medium text-foreground">{question.prompt}</p>
         </div>
         <span className="shrink-0 text-sm tabular-nums text-muted-foreground">
-          {evaluation.score}%
+          {answer.skipped ? "Skipped" : `${evaluation.score}%`}
         </span>
         <ChevronDown
           className={cn("size-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")}
@@ -153,7 +153,7 @@ function QuestionReviewRow({ index, item }: { index: number; item: AnsweredQuest
             <div>
               <p className="mb-1 text-xs font-medium text-muted-foreground">Your answer</p>
               <p className="rounded-xl bg-secondary/30 p-3 whitespace-pre-wrap text-foreground/85">
-                {answer.text || "(no answer provided)"}
+                {answer.skipped ? "(you skipped this question)" : answer.text || "(no answer provided)"}
               </p>
             </div>
           )}
@@ -233,10 +233,18 @@ export function ReportView({
   topic,
   report,
   history,
+  difficulty,
+  length,
+  backHref,
+  backLabel,
 }: {
   topic: string;
   report: FinalReport;
   history: AnsweredQuestion[];
+  difficulty?: Difficulty;
+  length?: AssessmentLength;
+  backHref?: string;
+  backLabel?: string;
 }) {
   const router = useRouter();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -388,15 +396,32 @@ export function ReportView({
         />
       </div>
 
-      <div data-report-section style={{ opacity: 0 }} className="mt-10 flex justify-center">
+      <div
+        data-report-section
+        style={{ opacity: 0 }}
+        className="mt-10 flex flex-wrap justify-center gap-3"
+      >
+        {difficulty && length && (
+          <Button
+            size="lg"
+            className="rounded-2xl font-semibold"
+            onClick={() =>
+              router.push(
+                `/assessment?${new URLSearchParams({ topic, difficulty, length: String(length) }).toString()}`,
+              )
+            }
+          >
+            <RotateCcw className="mr-1 size-4" />
+            Retake This Topic
+          </Button>
+        )}
         <Button
           size="lg"
           variant="outline"
           className="rounded-2xl font-semibold"
-          onClick={() => router.push("/")}
+          onClick={() => router.push(backHref ?? "/")}
         >
-          <RotateCcw className="mr-1 size-4" />
-          Try Another Topic
+          {backLabel ?? "Try Another Topic"}
         </Button>
       </div>
     </div>

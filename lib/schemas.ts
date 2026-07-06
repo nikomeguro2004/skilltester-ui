@@ -87,6 +87,7 @@ export const answerSubmissionSchema = z.object({
   questionId: z.string().min(1),
   selectedOptionIds: z.array(z.string()).optional(),
   text: z.string().optional(),
+  skipped: z.boolean().optional(),
 });
 
 export const answeredQuestionSchema = z.object({
