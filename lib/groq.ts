@@ -20,6 +20,74 @@ function getClient(): Groq {
 
 export const DEFAULT_MODEL = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
 
+// Groq's compound systems run web search (and other tools) server-side, then
+// return a normal chat completion — no separate search API/key needed. Mini
+// does at most one tool call, which is all a single grounding search needs,
+// at meaningfully lower latency than the full multi-tool-call model.
+const COMPOUND_MODEL = "groq/compound-mini";
+
+export interface WebSource {
+  title: string;
+  url: string;
+}
+
+export interface WebResearchResult {
+  brief: string;
+  sources: WebSource[];
+}
+
+/**
+ * Best-effort live web research for a topic, so the knowledge map that
+ * follows is grounded in real, current facts instead of whatever the base
+ * model happens to remember (or invents) about a niche/new product. Returns
+ * null on any failure — callers fall back to the ungrounded prompt rather
+ * than blocking the assessment on a search outage.
+ */
+export async function fetchWebResearchBrief(topic: string): Promise<WebResearchResult | null> {
+  if (!apiKey) return null;
+  try {
+    const groq = getClient();
+    const completion = await groq.chat.completions.create({
+      model: COMPOUND_MODEL,
+      temperature: 0.3,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a research assistant preparing notes for a quiz writer. Use web search to find accurate, current, specific facts about the given topic — this matters most when it's a specific product, company, tool, or niche subject that a language model might not already know well or could hallucinate about. Write a concise factual brief (roughly 200-350 words) covering: what it actually is, its real features/capabilities, how practitioners actually use it, real terminology, and anything distinctive or commonly misunderstood. If web search turns up no reliable information confirming the topic exists, say so plainly instead of guessing or inventing details.",
+        },
+        { role: "user", content: `Research this topic: "${topic}"` },
+      ],
+    });
+
+    const message = completion.choices[0]?.message;
+    const brief = message?.content?.trim();
+    if (!brief) return null;
+
+    const sources: WebSource[] = [];
+    for (const tool of message.executed_tools ?? []) {
+      for (const result of tool.search_results?.results ?? []) {
+        if (result.url && result.title) sources.push({ title: result.title, url: result.url });
+      }
+      for (const page of tool.browser_results ?? []) {
+        if (page.url && page.title) sources.push({ title: page.title, url: page.url });
+      }
+    }
+    const seenUrls = new Set<string>();
+    const uniqueSources = sources
+      .filter((s) => (seenUrls.has(s.url) ? false : (seenUrls.add(s.url), true)))
+      .slice(0, 6);
+
+    return { brief, sources: uniqueSources };
+  } catch (err) {
+    console.warn(
+      "[groq] web research unavailable, continuing without grounding:",
+      err instanceof Error ? err.message : err,
+    );
+    return null;
+  }
+}
+
 // Tried in order. If a model is rate-limited (or otherwise failing), the
 // next one takes over so a single model's daily cap doesn't stall the app.
 const MODEL_FALLBACK_CHAIN = [

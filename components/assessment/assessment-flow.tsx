@@ -354,7 +354,9 @@ export function AssessmentFlow() {
       />
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-16">
         <ProgressHeader topic={topic} current={questionNumber} total={length} />
-        {areaStates.length > 0 && <KnowledgeRadar areaStates={areaStates} />}
+        {areaStates.length > 0 && (
+          <KnowledgeRadar areaStates={areaStates} sources={knowledgeMap?.sources} />
+        )}
         {stage === "loading-question" &&
           (streamingPreview ? (
             <div className="flex w-full flex-col gap-3 rounded-3xl border-2 border-border bg-card/60 px-6 py-8">

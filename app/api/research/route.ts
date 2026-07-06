@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { generateJSON } from "@/lib/groq";
+import { fetchWebResearchBrief, generateJSON } from "@/lib/groq";
 import { buildResearchPrompt, RESEARCH_SYSTEM } from "@/lib/prompts";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { difficultySchema, knowledgeMapSchema } from "@/lib/schemas";
@@ -39,14 +39,16 @@ export async function POST(req: Request) {
   const { topic, difficulty } = parsed.data;
 
   try {
+    const webResearch = await fetchWebResearchBrief(topic);
+
     const knowledgeMap = await generateJSON({
       system: RESEARCH_SYSTEM,
-      user: buildResearchPrompt(topic, difficulty),
+      user: buildResearchPrompt(topic, difficulty, webResearch?.brief),
       schema: knowledgeMapSchema,
       temperature: 0.5,
     });
 
-    return NextResponse.json(knowledgeMap);
+    return NextResponse.json({ ...knowledgeMap, sources: webResearch?.sources ?? [] });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Research generation failed";
     return NextResponse.json({ error: message }, { status: 502 });

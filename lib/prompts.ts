@@ -10,6 +10,7 @@ import type {
 export const RESEARCH_SYSTEM = `You are a friendly, knowledgeable expert creating a fun and engaging knowledge map for a given topic. Your goal is to structure a great conversational quiz.
 Be precise and interesting — avoid generic filler. Identify 5-8 distinct knowledge areas for the topic. Weight areas by how central they are (1=minor, 5=core).
 Do NOT ask coding or programming questions unless the topic is specifically about a programming language or framework. Ensure it feels like a friendly conversation rather than a rigid exam.
+When live web research notes are provided, treat them as ground truth for real names/features/terminology — don't contradict them. If the notes say the topic couldn't be confirmed to exist, build the map from the topic's literal meaning as a reasonable expert would, without inventing fake specifics as if they were confirmed facts.
 
 Return ONLY a JSON object with this exact shape:
 {
@@ -21,8 +22,15 @@ Return ONLY a JSON object with this exact shape:
   "faqs": string[] (5-8 frequently asked / interview-style questions about this topic)
 }`;
 
-export function buildResearchPrompt(topic: string, difficulty: Difficulty): string {
-  return `Topic: "${topic}"\nTarget assessment difficulty: ${difficulty}\n\nBuild the knowledge map now. Tailor depth of areas to the ${difficulty} level, but still cover the full breadth of the topic.`;
+export function buildResearchPrompt(
+  topic: string,
+  difficulty: Difficulty,
+  webBrief?: string | null,
+): string {
+  const briefBlock = webBrief
+    ? `\n\nLive web research on this topic (use these real facts — names, features, terminology, specifics — instead of generic or invented ones; ground areas/mistakes/bestPractices/faqs in what's actually true):\n"""\n${webBrief}\n"""`
+    : "";
+  return `Topic: "${topic}"\nTarget assessment difficulty: ${difficulty}\n\nBuild the knowledge map now. Tailor depth of areas to the ${difficulty} level, but still cover the full breadth of the topic.${briefBlock}`;
 }
 
 const QUESTION_TYPES_GUIDE = `Question types available — mix them, but ONLY use ones that genuinely fit this specific topic. Never force code, commands, or software-engineering framing onto a topic that isn't about technology or programming.

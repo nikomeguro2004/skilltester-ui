@@ -6,7 +6,7 @@ import { Sparkles } from "lucide-react";
 import { scrambleTo } from "@/lib/scramble-text";
 
 const RESEARCH_STEPS = [
-  "Learning about your topic",
+  "Searching the web for up-to-date info",
   "Mapping out what's worth knowing",
   "Thinking up some good questions",
 ];

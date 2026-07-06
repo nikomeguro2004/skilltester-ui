@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { animate } from "animejs";
-import { Compass } from "lucide-react";
+import { Compass, Globe } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -10,8 +10,17 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { AreaState } from "@/lib/adaptive-engine";
+import type { WebSource } from "@/lib/types";
 
 const LEVEL_LABELS = ["beginner", "intermediate", "advanced", "expert"];
+
+function hostnameOf(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+}
 
 function statusColor(state: AreaState) {
   if (state.ceilingLevelIndex !== null) return "bg-chart-3";
@@ -109,7 +118,13 @@ function RadarPill({ state }: { state: AreaState }) {
   );
 }
 
-export function KnowledgeRadar({ areaStates }: { areaStates: AreaState[] }) {
+export function KnowledgeRadar({
+  areaStates,
+  sources,
+}: {
+  areaStates: AreaState[];
+  sources?: WebSource[];
+}) {
   const probed = areaStates.filter((s) => s.attempts > 0).length;
   const ceilingsFound = areaStates.filter((s) => s.ceilingLevelIndex !== null).length;
 
@@ -132,6 +147,35 @@ export function KnowledgeRadar({ areaStates }: { areaStates: AreaState[] }) {
           <RadarPill key={state.area} state={state} />
         ))}
       </div>
+      {sources && sources.length > 0 && (
+        <div className="mt-3 flex items-center gap-1.5 border-t border-border/70 pt-2.5">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="flex shrink-0 items-center gap-1 text-[11px] font-medium text-muted-foreground/80">
+                <Globe className="size-3" />
+                Grounded in live search
+              </span>
+            </TooltipTrigger>
+            <TooltipContent className="text-xs">
+              <p>This quiz is grounded in real, current sources.</p>
+            </TooltipContent>
+          </Tooltip>
+          <div className="scrollbar-none flex min-w-0 gap-1.5 overflow-x-auto">
+            {sources.map((source) => (
+              <a
+                key={source.url}
+                href={source.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={source.title}
+                className="shrink-0 truncate rounded-full bg-secondary/60 px-2 py-0.5 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {hostnameOf(source.url)}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -8,6 +8,11 @@ export interface KnowledgeArea {
   weight: number; // relative importance 1-5
 }
 
+export interface WebSource {
+  title: string;
+  url: string;
+}
+
 export interface KnowledgeMap {
   topic: string;
   summary: string;
@@ -15,6 +20,7 @@ export interface KnowledgeMap {
   commonMistakes: string[];
   bestPractices: string[];
   faqs: string[];
+  sources?: WebSource[]; // live web search results the map was grounded in, if any
 }
 
 export type QuestionType =
