@@ -81,7 +81,7 @@ export function StageLoading({
   return (
     <div
       ref={rootRef}
-      className="relative flex flex-1 flex-col items-center justify-center px-6 py-24"
+      className="relative flex flex-1 flex-col items-center justify-center px-4 py-24"
     >
       <div
         aria-hidden

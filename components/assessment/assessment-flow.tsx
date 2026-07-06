@@ -322,7 +322,7 @@ export function AssessmentFlow() {
 
   if (stage === "report" && report) {
     return (
-      <div className="flex-1 px-6 py-16">
+      <div className="flex-1 px-4 py-16">
         <ReportView
           topic={topic}
           report={report}
@@ -340,7 +340,7 @@ export function AssessmentFlow() {
         aria-hidden
         className="bg-dot-grid pointer-events-none absolute inset-0 -z-10 opacity-[0.25] [mask-image:radial-gradient(ellipse_70%_50%_at_50%_0%,black,transparent)]"
       />
-      <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-6 py-16">
+      <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-16">
         <ProgressHeader topic={topic} current={questionNumber} total={length} />
         {areaStates.length > 0 && <KnowledgeRadar areaStates={areaStates} />}
         {stage === "loading-question" &&

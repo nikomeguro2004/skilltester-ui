@@ -15,7 +15,7 @@ export function ErrorState({
   isHomeAction?: boolean;
 }) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center px-6 py-24 text-center">
+    <div className="flex flex-1 flex-col items-center justify-center px-4 py-24 text-center">
       <div className="mb-4 flex size-14 items-center justify-center rounded-2xl border-2 border-destructive/30 bg-destructive/10">
         <TriangleAlert className="size-6 text-destructive" />
       </div>

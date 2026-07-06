@@ -6,7 +6,7 @@ import { ScrambleHeading } from "@/components/home/scramble-heading";
 
 export default function Home() {
   return (
-    <div className="relative flex flex-1 flex-col items-center justify-center overflow-hidden px-6 py-20">
+    <div className="relative flex flex-1 flex-col items-center justify-center overflow-hidden px-4 py-20">
       {/* aurora glow */}
       <div
         aria-hidden

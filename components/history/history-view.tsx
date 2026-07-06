@@ -37,7 +37,7 @@ export function HistoryView() {
 
   if (selected) {
     return (
-      <div className="flex-1 px-6 py-16">
+      <div className="flex-1 px-4 py-16">
         <div className="mx-auto mb-6 w-full max-w-3xl">
           <button
             type="button"
@@ -62,7 +62,7 @@ export function HistoryView() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl flex-1 px-6 py-16">
+    <div className="mx-auto w-full max-w-2xl flex-1 px-4 py-16">
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Your Quiz History</h1>
         <Link href="/" className="text-sm font-medium text-primary hover:underline">
