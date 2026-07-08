@@ -6,7 +6,12 @@ import { ArrowLeft, Clock, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ReportView } from "@/components/report/report-view";
 import { cn } from "@/lib/utils";
-import { deleteQuizRecord, loadQuizHistory, type QuizRecord } from "@/lib/quiz-history";
+import {
+  clearQuizHistory,
+  deleteQuizRecord,
+  loadQuizHistory,
+  type QuizRecord,
+} from "@/lib/quiz-history";
 
 function formatDate(ts: number) {
   return new Date(ts).toLocaleDateString(undefined, {
@@ -25,6 +30,7 @@ function scoreTone(score: number) {
 export function HistoryView() {
   const [records, setRecords] = useState<QuizRecord[] | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [confirmingClear, setConfirmingClear] = useState(false);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time read of localStorage on mount, not a reactive sync of external state
@@ -63,11 +69,45 @@ export function HistoryView() {
 
   return (
     <div className="mx-auto w-full max-w-2xl flex-1 px-4 py-16">
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold text-foreground">Your Quiz History</h1>
-        <Link href="/" className="text-sm font-medium text-primary hover:underline">
-          New Quiz
-        </Link>
+        <div className="flex shrink-0 items-center gap-4">
+          {records.length > 0 &&
+            (confirmingClear ? (
+              <span className="flex items-center gap-2 text-sm">
+                <span className="text-muted-foreground">Clear all?</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearQuizHistory();
+                    setRecords([]);
+                    setConfirmingClear(false);
+                  }}
+                  className="font-medium text-destructive hover:underline"
+                >
+                  Yes, clear
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmingClear(false)}
+                  className="font-medium text-muted-foreground hover:text-foreground"
+                >
+                  Cancel
+                </button>
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setConfirmingClear(true)}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground"
+              >
+                Clear All
+              </button>
+            ))}
+          <Link href="/" className="text-sm font-medium text-primary hover:underline">
+            New Quiz
+          </Link>
+        </div>
       </div>
 
       {records.length === 0 ? (
