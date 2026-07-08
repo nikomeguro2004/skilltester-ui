@@ -68,6 +68,11 @@ export function AssessmentFlow() {
   const topic = (searchParams.get("topic") || "").trim();
   const difficulty = parseDifficulty(searchParams.get("difficulty"));
   const length = parseLength(searchParams.get("length"));
+  // Only an explicit "Continue" from the resume banner should resume a
+  // stored session. Every other way into this page (typing the same topic
+  // again, Retake This Topic, a bare link) means "start fresh" even if it
+  // happens to match an abandoned session's topic/difficulty/length.
+  const wantsResume = searchParams.get("resume") === "1";
 
   const [stage, setStage] = useState<Stage>(() => (topic ? "loading-research" : "error"));
   const [knowledgeMap, setKnowledgeMap] = useState<KnowledgeMap | null>(null);
@@ -214,14 +219,16 @@ export function AssessmentFlow() {
     }
   }, [topic, difficulty, runQuestionFetch]);
 
-  // On mount: resume a matching in-progress session from sessionStorage, or
-  // clear a stale one (different topic/difficulty/length) and start fresh.
+  // On mount: resume a matching in-progress session from sessionStorage only
+  // if the caller explicitly asked to (the resume banner's Continue button),
+  // otherwise clear anything stored and start fresh.
   useEffect(() => {
     if (!topic || hydratedRef.current) return;
     hydratedRef.current = true;
 
     const stored = loadSession();
     if (
+      wantsResume &&
       stored &&
       stored.topic === topic &&
       stored.difficulty === difficulty &&
@@ -246,7 +253,7 @@ export function AssessmentFlow() {
 
     clearSession();
     runResearch();
-  }, [topic, difficulty, length, runQuestionFetch, runResearch]);
+  }, [topic, difficulty, length, wantsResume, runQuestionFetch, runResearch]);
 
   // Persist progress after every meaningful change so a refresh (or the home
   // page's resume banner) can pick the assessment back up.

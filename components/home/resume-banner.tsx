@@ -23,6 +23,7 @@ export function ResumeBanner() {
       topic: session.topic,
       difficulty: session.difficulty,
       length: String(session.length),
+      resume: "1",
     });
     router.push(`/assessment?${params.toString()}`);
   }
