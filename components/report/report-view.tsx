@@ -7,8 +7,10 @@ import {
   ArrowRight,
   BookOpen,
   Check,
+  CheckCheck,
   ChevronDown,
   Compass,
+  Copy,
   ListChecks,
   RotateCcw,
   Target,
@@ -229,6 +231,62 @@ function InsightCard({
   );
 }
 
+function formatResultsAsText(topic: string, report: FinalReport): string {
+  const lines = [
+    `${topic} — Quiz Results`,
+    `Score: ${report.overallScore}% (${report.knowledgeLevel} level)`,
+    "",
+    "What I covered:",
+    ...report.areaCoverage.map((a) =>
+      a.assessed ? `  - ${a.area}: ${a.score}%` : `  - ${a.area}: not assessed`,
+    ),
+  ];
+  if (report.strongestAreas.length) {
+    lines.push("", "Strongest areas:", ...report.strongestAreas.map((a) => `  - ${a}`));
+  }
+  if (report.weakestAreas.length) {
+    lines.push("", "Room to grow:", ...report.weakestAreas.map((a) => `  - ${a}`));
+  }
+  lines.push("", report.summary);
+  return lines.join("\n");
+}
+
+function CopyResultsButton({ topic, report }: { topic: string; report: FinalReport }) {
+  const [copied, setCopied] = useState(false);
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(formatResultsAsText(topic, report));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // clipboard permission denied or unavailable — nothing to fall back to
+    }
+  }
+
+  return (
+    <Button
+      type="button"
+      size="lg"
+      variant="outline"
+      className="rounded-2xl font-semibold"
+      onClick={handleCopy}
+    >
+      {copied ? (
+        <>
+          <CheckCheck className="mr-1 size-4" />
+          Copied
+        </>
+      ) : (
+        <>
+          <Copy className="mr-1 size-4" />
+          Copy Results
+        </>
+      )}
+    </Button>
+  );
+}
+
 export function ReportView({
   topic,
   report,
@@ -423,6 +481,7 @@ export function ReportView({
         >
           {backLabel ?? "Try Another Topic"}
         </Button>
+        <CopyResultsButton topic={topic} report={report} />
       </div>
     </div>
   );
