@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { renderInlineCode } from "@/lib/inline-code";
 import type { AnswerSubmission, Question } from "@/lib/types";
 
 const TYPE_LABELS: Record<Question["type"], string> = {
@@ -120,12 +121,12 @@ export function QuestionCard({
 
       {question.context && (
         <div className="mb-5 rounded-2xl border border-border bg-secondary/40 p-4 text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">
-          {question.context}
+          {renderInlineCode(question.context)}
         </div>
       )}
 
       <h2 className="text-balance text-xl leading-relaxed font-semibold text-foreground sm:text-2xl">
-        {question.prompt}
+        {renderInlineCode(question.prompt)}
       </h2>
 
       <div className="mt-6">
@@ -145,7 +146,9 @@ export function QuestionCard({
                   )}
                 >
                   <RadioGroupItem value={opt.id} id={opt.id} className="mt-0.5" />
-                  <span className="leading-relaxed whitespace-pre-wrap">{opt.label}</span>
+                  <span className="leading-relaxed whitespace-pre-wrap">
+                    {renderInlineCode(opt.label)}
+                  </span>
                 </Label>
               ))}
             </div>
@@ -172,7 +175,9 @@ export function QuestionCard({
                   onCheckedChange={() => toggleMulti(opt.id)}
                   className="mt-0.5"
                 />
-                <span className="leading-relaxed whitespace-pre-wrap">{opt.label}</span>
+                <span className="leading-relaxed whitespace-pre-wrap">
+                  {renderInlineCode(opt.label)}
+                </span>
               </Label>
             ))}
             <p className="pt-1 text-xs text-muted-foreground">

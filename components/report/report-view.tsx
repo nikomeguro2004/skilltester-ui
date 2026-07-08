@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { renderInlineCode } from "@/lib/inline-code";
 import { useCountUp } from "@/lib/use-count-up";
 import type { AnsweredQuestion, AssessmentLength, Difficulty, FinalReport } from "@/lib/types";
 
@@ -109,7 +110,9 @@ function QuestionReviewRow({ index, item }: { index: number; item: AnsweredQuest
           <p className="text-xs text-muted-foreground">
             Question {index + 1} · {question.area}
           </p>
-          <p className="truncate text-sm font-medium text-foreground">{question.prompt}</p>
+          <p className="truncate text-sm font-medium text-foreground">
+            {renderInlineCode(question.prompt)}
+          </p>
         </div>
         <span className="shrink-0 text-sm tabular-nums text-muted-foreground">
           {answer.skipped ? "Skipped" : `${evaluation.score}%`}
@@ -123,10 +126,10 @@ function QuestionReviewRow({ index, item }: { index: number; item: AnsweredQuest
         <div className="space-y-4 border-t border-border px-4 pt-4 pb-5 text-sm">
           {question.context && (
             <p className="rounded-xl bg-secondary/40 p-3 whitespace-pre-wrap text-muted-foreground">
-              {question.context}
+              {renderInlineCode(question.context)}
             </p>
           )}
-          <p className="font-medium text-foreground/90">{question.prompt}</p>
+          <p className="font-medium text-foreground/90">{renderInlineCode(question.prompt)}</p>
 
           {isChoice && question.options ? (
             <div className="space-y-1.5">
@@ -145,7 +148,7 @@ function QuestionReviewRow({ index, item }: { index: number; item: AnsweredQuest
                   >
                     {isCorrect && <Check className="size-3.5 shrink-0" />}
                     {isSelected && !isCorrect && <X className="size-3.5 shrink-0" />}
-                    <span className="flex-1">{opt.label}</span>
+                    <span className="flex-1">{renderInlineCode(opt.label)}</span>
                     {isSelected && <span className="shrink-0 text-xs opacity-70">your pick</span>}
                   </div>
                 );
@@ -155,18 +158,24 @@ function QuestionReviewRow({ index, item }: { index: number; item: AnsweredQuest
             <div>
               <p className="mb-1 text-xs font-medium text-muted-foreground">Your answer</p>
               <p className="rounded-xl bg-secondary/30 p-3 whitespace-pre-wrap text-foreground/85">
-                {answer.skipped ? "(you skipped this question)" : answer.text || "(no answer provided)"}
+                {answer.skipped
+                  ? "(you skipped this question)"
+                  : answer.text
+                    ? renderInlineCode(answer.text)
+                    : "(no answer provided)"}
               </p>
             </div>
           )}
 
           <div>
             <p className="mb-1 text-xs font-medium text-muted-foreground">Ideal answer</p>
-            <p className="whitespace-pre-wrap text-foreground/80">{evaluation.idealAnswer}</p>
+            <p className="whitespace-pre-wrap text-foreground/80">
+              {renderInlineCode(evaluation.idealAnswer)}
+            </p>
           </div>
 
           {evaluation.explanation && (
-            <p className="text-foreground/70">{evaluation.explanation}</p>
+            <p className="text-foreground/70">{renderInlineCode(evaluation.explanation)}</p>
           )}
         </div>
       )}
@@ -213,7 +222,7 @@ function InsightCard({
                   : "border-border bg-secondary/50 text-foreground/85",
               )}
             >
-              {c}
+              {renderInlineCode(c)}
             </span>
           ))}
         </div>
@@ -222,7 +231,7 @@ function InsightCard({
         <ul className="space-y-1.5">
           {items.map((item, i) => (
             <li key={i} className="text-sm leading-relaxed text-foreground/85">
-              {item}
+              {renderInlineCode(item)}
             </li>
           ))}
         </ul>
@@ -403,7 +412,9 @@ export function ReportView({
         <h3 className="mb-3 text-sm font-semibold text-primary">
           Your Summary
         </h3>
-        <p className="text-sm leading-relaxed text-foreground/90">{report.summary}</p>
+        <p className="text-sm leading-relaxed text-foreground/90">
+          {renderInlineCode(report.summary)}
+        </p>
       </section>
 
       <section data-report-section style={{ opacity: 0 }} className="mt-6">
