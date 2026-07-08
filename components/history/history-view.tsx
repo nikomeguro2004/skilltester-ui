@@ -31,6 +31,7 @@ export function HistoryView() {
   const [records, setRecords] = useState<QuizRecord[] | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [confirmingClear, setConfirmingClear] = useState(false);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time read of localStorage on mount, not a reactive sync of external state
@@ -147,17 +148,37 @@ export function HistoryView() {
                   </p>
                 </div>
               </button>
-              <button
-                type="button"
-                onClick={() => {
-                  deleteQuizRecord(r.id);
-                  setRecords(loadQuizHistory());
-                }}
-                className="shrink-0 rounded-full p-2 text-muted-foreground/50 opacity-0 transition-opacity outline-none hover:text-destructive group-hover:opacity-100 focus-visible:opacity-100"
-                aria-label={`Delete ${r.topic} record`}
-              >
-                <Trash2 className="size-4" />
-              </button>
+              {confirmingDeleteId === r.id ? (
+                <span className="flex shrink-0 items-center gap-2 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      deleteQuizRecord(r.id);
+                      setRecords(loadQuizHistory());
+                      setConfirmingDeleteId(null);
+                    }}
+                    className="font-medium text-destructive hover:underline"
+                  >
+                    Delete
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmingDeleteId(null)}
+                    className="font-medium text-muted-foreground hover:text-foreground"
+                  >
+                    Cancel
+                  </button>
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setConfirmingDeleteId(r.id)}
+                  className="shrink-0 rounded-full p-2 text-muted-foreground/50 opacity-0 transition-opacity outline-none hover:text-destructive group-hover:opacity-100 focus-visible:opacity-100"
+                  aria-label={`Delete ${r.topic} record`}
+                >
+                  <Trash2 className="size-4" />
+                </button>
+              )}
             </div>
           ))}
         </div>
