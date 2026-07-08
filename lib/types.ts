@@ -64,15 +64,10 @@ export interface AnswerSubmission {
 export interface Evaluation {
   score: number; // 0-100
   accuracy: number; // 0-100
-  understanding: number; // 0-100
-  practicalThinking: number; // 0-100
-  technicalDepth: number; // 0-100
-  communication: number; // 0-100
   strengths: string[];
   weaknesses: string[];
   missingConcepts: string[];
   idealAnswer: string;
-  improvementSuggestions: string[];
   explanation: string; // why the answer was right/wrong (MCQ) or overall rationale
 }
 

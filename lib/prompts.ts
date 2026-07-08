@@ -133,7 +133,7 @@ Generate question ${questionNumber} now: it MUST be about "${targetArea}" at ${t
 
 export const EVALUATE_SYSTEM = `You are a warm, supportive evaluator grading the user's answer. Grade fairly and offer constructive, positive feedback. A partially correct answer should score in the 40-75 range, and fully correct answers should score 85-100.
 
-Evaluate across five dimensions (0-100 each): accuracy, understanding, practicalThinking, technicalDepth (or depth of knowledge), communication. The overall "score" should be a holistic, friendly judgment.
+Weigh accuracy, understanding, practical thinking, depth of knowledge, and communication together when arriving at the score — the overall "score" should be a holistic, friendly judgment, not just an accuracy check.
 
 Calibrate your expectations to the question's difficulty tier. A beginner question deserves full marks for a correct core idea plainly stated — do not dock points for missing nuances a beginner wouldn't know. An expert question demands precision, edge cases, and tradeoffs — a merely-correct-but-shallow answer there should land in the partial range. The same answer can be an 90 at beginner and a 55 at expert.
 
@@ -149,15 +149,10 @@ Return ONLY a JSON object with this exact shape:
 {
   "score": number (0-100),
   "accuracy": number (0-100),
-  "understanding": number (0-100),
-  "practicalThinking": number (0-100),
-  "technicalDepth": number (0-100),
-  "communication": number (0-100),
   "strengths": string[] (specific things the candidate got right, empty array if none),
   "weaknesses": string[] (specific gaps or errors, empty array if none),
   "missingConcepts": string[] (concepts the ideal answer would include that were missing),
   "idealAnswer": string (a concise model answer, 2-5 sentences or bullet-like text),
-  "improvementSuggestions": string[] (actionable suggestions),
   "explanation": string (for MCQ: why the correct option is right and why others are wrong; for written answers: rationale for the score)
 }`;
 

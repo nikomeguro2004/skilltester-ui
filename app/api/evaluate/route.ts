@@ -48,15 +48,10 @@ export async function POST(req: Request) {
     return NextResponse.json({
       score: 0,
       accuracy: 0,
-      understanding: 0,
-      practicalThinking: 0,
-      technicalDepth: 0,
-      communication: 0,
       strengths: [],
       weaknesses: [],
       missingConcepts: [],
       idealAnswer: "(You skipped this question.)",
-      improvementSuggestions: [],
       explanation: "Skipped — no answer was submitted for this question.",
     });
   }

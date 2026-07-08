@@ -71,15 +71,10 @@ export const questionSchema = z
 export const evaluationSchema = z.object({
   score: z.number().min(0).max(100),
   accuracy: z.number().min(0).max(100),
-  understanding: z.number().min(0).max(100),
-  practicalThinking: z.number().min(0).max(100),
-  technicalDepth: z.number().min(0).max(100),
-  communication: z.number().min(0).max(100),
   strengths: z.array(z.string()),
   weaknesses: z.array(z.string()),
   missingConcepts: z.array(z.string()),
   idealAnswer: z.string(),
-  improvementSuggestions: z.array(z.string()),
   explanation: z.string(),
 });
 
