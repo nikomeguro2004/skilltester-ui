@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { AreaState } from "@/lib/adaptive-engine";
-import type { WebSource } from "@/lib/types";
+import type { KnowledgeArea, WebSource } from "@/lib/types";
 
 const LEVEL_LABELS = ["beginner", "intermediate", "advanced", "expert"];
 
@@ -65,7 +65,7 @@ function RadarPingDot({ state }: { state: AreaState }) {
   );
 }
 
-function RadarPill({ state }: { state: AreaState }) {
+function RadarPill({ state, description }: { state: AreaState; description?: string }) {
   const rowRef = useRef<HTMLDivElement>(null);
   const prevCeilingRef = useRef(state.ceilingLevelIndex);
 
@@ -98,21 +98,24 @@ function RadarPill({ state }: { state: AreaState }) {
           </span>
         </div>
       </TooltipTrigger>
-      <TooltipContent className="text-xs">
-        {state.attempts === 0 ? (
-          <p>Not explored yet</p>
-        ) : (
-          <div className="space-y-0.5">
-            <p>{state.attempts} question{state.attempts > 1 ? "s" : ""} asked</p>
-            <p>
-              Mastered up to:{" "}
-              {state.confirmedLevelIndex >= 0 ? LEVEL_LABELS[state.confirmedLevelIndex] : "none yet"}
-            </p>
-            {state.ceilingLevelIndex !== null && (
-              <p className="text-chart-3">Found your limit at: {LEVEL_LABELS[state.ceilingLevelIndex]}</p>
-            )}
-          </div>
-        )}
+      <TooltipContent className="max-w-64 text-xs">
+        <div className="space-y-1">
+          {description && <p className="text-foreground/90">{description}</p>}
+          {state.attempts === 0 ? (
+            <p className="text-muted-foreground">Not explored yet</p>
+          ) : (
+            <div className="space-y-0.5 text-muted-foreground">
+              <p>{state.attempts} question{state.attempts > 1 ? "s" : ""} asked</p>
+              <p>
+                Mastered up to:{" "}
+                {state.confirmedLevelIndex >= 0 ? LEVEL_LABELS[state.confirmedLevelIndex] : "none yet"}
+              </p>
+              {state.ceilingLevelIndex !== null && (
+                <p className="text-chart-3">Found your limit at: {LEVEL_LABELS[state.ceilingLevelIndex]}</p>
+              )}
+            </div>
+          )}
+        </div>
       </TooltipContent>
     </Tooltip>
   );
@@ -120,11 +123,14 @@ function RadarPill({ state }: { state: AreaState }) {
 
 export function KnowledgeRadar({
   areaStates,
+  areas,
   sources,
 }: {
   areaStates: AreaState[];
+  areas?: KnowledgeArea[];
   sources?: WebSource[];
 }) {
+  const descriptionByArea = new Map(areas?.map((a) => [a.name, a.description]));
   const probed = areaStates.filter((s) => s.attempts > 0).length;
   const ceilingsFound = areaStates.filter((s) => s.ceilingLevelIndex !== null).length;
 
@@ -144,7 +150,7 @@ export function KnowledgeRadar({
       </div>
       <div className="scrollbar-none -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
         {areaStates.map((state) => (
-          <RadarPill key={state.area} state={state} />
+          <RadarPill key={state.area} state={state} description={descriptionByArea.get(state.area)} />
         ))}
       </div>
       {sources && sources.length > 0 && (

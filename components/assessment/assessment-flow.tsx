@@ -362,7 +362,11 @@ export function AssessmentFlow() {
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-16">
         <ProgressHeader topic={topic} current={questionNumber} total={length} />
         {areaStates.length > 0 && (
-          <KnowledgeRadar areaStates={areaStates} sources={knowledgeMap?.sources} />
+          <KnowledgeRadar
+            areaStates={areaStates}
+            areas={knowledgeMap?.areas}
+            sources={knowledgeMap?.sources}
+          />
         )}
         {stage === "loading-question" &&
           (streamingPreview ? (
