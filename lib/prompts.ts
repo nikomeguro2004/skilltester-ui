@@ -113,8 +113,10 @@ export function buildQuestionPrompt(
     return acc;
   }, {});
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructured only to exclude sources from the dump below
+  const { sources: _sources, ...mapForPrompt } = map;
   return `Knowledge map for "${map.topic}":
-${JSON.stringify(map, null, 2)}
+${JSON.stringify(mapForPrompt, null, 2)}
 
 Assessment length: ${length} questions total. This is question ${questionNumber} of ${length}.
 
